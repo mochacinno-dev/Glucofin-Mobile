@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="logo_android.png" width="120" alt="Glucofin logo"/>
+<img src="logo_android.png" width="250" alt="Glucofin logo"/>
 
 # Glucofin — Android
 
