@@ -2,10 +2,15 @@ package com.mochi.glucofin.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+val BloodRed = Color(0xFF8B0000)
+val DarkBloodRed = Color(0xFF5D0000)
+val BloodRedContainer = Color(0xFFFFDAD6)
+val OnBloodRedContainer = Color(0xFF410002)
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+val BloodRedDark = Color(0xFFFFB4AB)
+val OnBloodRedDark = Color(0xFF690005)
+val BloodRedContainerDark = Color(0xFF93000A)
+val OnBloodRedContainerDark = Color(0xFFFFDAD6)
+
+val SecondaryBlood = Color(0xFF775652)
+val OnSecondaryBlood = Color(0xFFFFFFFF)

@@ -27,11 +27,12 @@ enum class RiskLevel(val color: Color) {
     MODERATE(Color(0xFFF1C40F)), // mmm ojito (amarillo)
     HIGH(Color(0xFFE67E22)),     // ya me dio miedo (naranja)
     CRITICAL(Color(0xFFE74C3C)), // corre al doctor (rojo)
-    NONE(Color(0xFF95A5A6))      // no se nada todavia (gris)
+    NONE(Color(0xFF95A5A6))      // no se nada todavía (gris)
 }
 
 // aqui guardamos todo lo que sabemos del humano
 data class PatientProfile(
+    var name: String = "",
     var fastingGlucose: Double = 0.0,
     var postOgttGlucose: Double = 0.0,
     var hba1c: Double = 0.0,
@@ -111,25 +112,49 @@ object GlucofinCalculator {
             bmiClass = classifyBmi(bmi)
         )
 
+        val recommendations = mutableListOf<String>()
+        val intro = if (p.name.isNotBlank()) "${p.name}, hemos analizado tu perfil y te sugerimos:" else "Recomendaciones basadas en tu perfil:"
+        recommendations.add(intro)
+
+        if (bmi >= 25) {
+            val weightMessage = if (bmi >= 30) "Tu IMC indica obesidad. Es crucial buscar asesoría nutricional." 
+                               else "Tienes sobrepeso. Un ligero ajuste en tu dieta y ejercicio ayudará mucho."
+            recommendations.add(weightMessage)
+        }
+        
+        if (!p.dailyExercise) recommendations.add("La actividad física es tu mejor aliada. Intenta caminar 30 min al día.")
+        if (!p.fruitsVegetables) recommendations.add("¡Más colores en tu plato! Consume al menos 3 porciones de frutas/verduras.")
+        if (p.hypertension) recommendations.add("Cuida tu corazón: reduce el consumo de sal y monitorea tu presión.")
+        
+        if (p.age >= 45 && findrisc >= 12) recommendations.add("Por tu edad y puntaje de riesgo, una prueba de glucosa anual es ideal.")
+        
+        if (p.fastingGlucose >= 100 || p.hba1c >= 5.7) {
+            recommendations.add("Tus niveles de glucosa están en rango de alerta. Evita bebidas azucaradas y harinas blancas.")
+        }
+
+        if (recommendations.size == 1) {
+            recommendations.add("¡Felicidades! Mantienes excelentes hábitos. Sigue con ese estilo de vida.")
+        }
+
         // la hora de la verdad... chan chan chan
         return when {
             // si el azucar esta super alta, ya valio
             (p.hba1c >= 6.5 && p.hba1c > 0) || (p.fastingGlucose >= 126 && p.fastingGlucose > 0) ->
-                RiskResult("Diabetes Detectada", "Requiere atención médica inmediata.", RiskLevel.CRITICAL, detail)
+                RiskResult("Diabetes Detectada", "Requiere atención médica inmediata.", RiskLevel.CRITICAL, detail, recommendations)
             
             // si esta mas o menos alta, cuidado
             (p.hba1c in 5.7..6.4) || (p.fastingGlucose in 100.0..125.0) ->
-                RiskResult("Prediabetes", "Riesgo alto. Cambie hábitos alimenticios.", RiskLevel.HIGH, detail)
+                RiskResult("Prediabetes", "Riesgo alto. Cambie hábitos alimenticios.", RiskLevel.HIGH, detail, recommendations)
 
             // si los puntos findrisc estan por las nubes
-            findrisc >= 15 -> RiskResult("Riesgo Muy Alto", "Puntuación FINDRISC crítica.", RiskLevel.HIGH, detail)
+            findrisc >= 15 -> RiskResult("Riesgo Muy Alto", "Puntuación FINDRISC crítica.", RiskLevel.HIGH, detail, recommendations)
             
             // si estas en el medio
             findrisc >= 12 || (homa != null && homa >= 2.9) -> 
-                RiskResult("Riesgo Moderado", "Considere chequeos médicos.", RiskLevel.MODERATE, detail)
+                RiskResult("Riesgo Moderado", "Considere chequeos médicos.", RiskLevel.MODERATE, detail, recommendations)
 
             // yuju! estas bien
-            else -> RiskResult("Riesgo Bajo", "Continúe con su estilo de vida saludable.", RiskLevel.LOW, detail)
+            else -> RiskResult("Riesgo Bajo", "Continúe con su estilo de vida saludable.", RiskLevel.LOW, detail, recommendations)
         }
     }
 
@@ -142,7 +167,8 @@ data class RiskResult(
     val status: String,
     val action: String,
     val level: RiskLevel,
-    val detail: RiskDetail
+    val detail: RiskDetail,
+    val recommendations: List<String> = emptyList()
 )
 
 // mas cajitas con numeritos detallados
